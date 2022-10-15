@@ -1,0 +1,250 @@
+Section 1 : Introduction
+
+- Welcome
+• Framework render react at server side
+• Generate static site
+
+- What is Next.js
+• You should know - Creating components, Using JSX,
+Passing props, Using state
+• Next is a react frontend development web framework created
+by Vercel that enables functionality such a server-side
+rendering and static site generation.
+• Server-Side rendering
+Next.js allows first page load to be rendered by the server,
+which is great for SEO and performance.
+• Other Next.js Benefits
+Easy page routing - no need to install react router dom
+API Routes
+Out of the box TypeScript and Sass
+Static site generation (next export)
+Easy deployment
+
+- Main Project Overview
+• Dj event project - list out dj and other musical events
+tools used - next.js, strapi (for backend) (headless cms),
+cloudinary (media hosting)
+
+- Getting setup
+• npx create-next-app <app-name>
+• Run dev server : npm run dev
+• Build : npm run build
+• Run production build locally : npm run start
+• Folders
+> public - static files available on site.
+> styles - globals.css (available across app), 
+css files for different components - Home.module.css or
+<Compenent>.module.css
+> pages - index.js is homepage having Home component,
+globals.css cannot be imported directly into compnents,
+globals.css is imported in _app.js file,
+only *.module.css styles can be imported in components.
+• In index.js
+Remove styles
+In div tag delete all, add h1 tag with "Welcome to Next".
+• Routes are need not be defined, nor library need to be 
+imported. Simply put pages inside pages folder.
+Pages are react components. For about page create
+about.js file.
+
+- Head tag
+imported from 'next/head',
+for custom titles, meta-tags, keywords, descriptions etc.
+Here we use Head tag inside first parent which can be div or 
+any other element, and doesn't need to be html.
+title - <title>WebDev Newz</title>
+meta - <meta name='keywords' content='web development,
+programming' />
+
+- Layouts and CSS modules
+• In _app.js file, MyApp wraps around page component,
+it takes in page component and page props and returns that.
+• We can wrap a layout using MyApp function, so we can
+have header, footer, navigation, sidebar etc.
+• Global styles are imported here.
+• Reusable components are stored in components folder in 
+root folder : components/<compents>.js
+• Convention is to use lowercase for pages and Uppercase
+for component's name's first letter.
+• CSS classes can be applied as styles.<className>
+• Create component components/Layout.js as
+Using functional component
+Rename Home.module.css to Layout.module.css
+Import this css as
+import styles from '../styles/Layout.module.css'
+Create element as
+<div className={styles.container}>
+  <main className={styles.main}>
+    {children}
+  </main>
+</div>
+Make this component accept child component as props
+const Layout = ({children}) => ...
+• In _app.js import Layout as
+import Layout from '../components/Layout'
+• In MyApp function nest current component in Layout as
+return (<Layout><Component {..pageProps} /> </Layout>)
+• In Layout.module.css change styles as
+.container { justify-content: flex-start; }
+.main {justify-content: flex-start; font-size: 1.25rem; }
+
+- Nav component & Link
+• Create new style : styles/Nav.module.css
+Add nav styles for '.nav', '.nav ul' and '.nav ul li a'
+• Create component as : components/Nav.js
+Import styles : import navStyles from '../styles/Nav.module.css'
+Import Link : import Link from 'next/link'
+Change div to nav, add class as navStyles.nav
+Add ul>li to nav
+Add link to li as : <Link href='/'>Home</Link>
+add same for /about in 2nd li.
+Apply style as className={navStyles.nav}
+• In Layout.js
+Import navbar : import Nav from './Nav'
+Change content as :
+return (<> <Nav /> <old content> </>)
+
+- Create a Header
+• Create style as : Header.module.css
+Paste title and description classes from Layout.module.css,
+and modify ".title a" TO ".title a, .title span".
+• Create component as : components/Header.js
+Import styles : import headerStyles from '../styles/Header.module.css'
+Create elements as
+<div><h1 className={headerStyles.title}>
+<span>WebDev</span> News</h1>
+<p className={headerStyles.description}>Keep up to date with the latest web dev news</p>
+</div>
+• In Layout.js
+Import Header component
+Add it before {children} in main element.
+• Inline styling in JSX as
+<div><style jsx>{` .title { color: red; } `} </style></div>
+
+- Custom Document
+• For having custom document having custom html and
+body tags having custom attributes like lang='en' etc.
+• Not normally used.
+
+- Data Fetching
+• Functions to fetch data and pass into pages as props
+• Function can be added above or below the component.
+getStaticProps - Fetch data at build time
+getServerSideProps - Fetch data on every request
+getStaticPaths - Dynamically generate paths based on 
+fetched data.
+
+- getStaticProps
+• In index.js
+Below compnent add function as
+export const getStaticProps = async () => {
+   const rest = await fetch(`https://jsonplaceholder.typicode.com/post?_limit=6`)
+   const articles = await res.json()
+   return {
+      props : {articles}
+   }
+}
+
+- Showing Data
+• In component function get props as Home({articles})
+Remove h1
+Add articles list as
+{articles.map(article => <h3>{article.title}</h3>)}
+• Create styles/Article.module.css
+Paste .grid and .card related class here from Layout.module.css
+• Create component/ArticleList.js as
+import articleStyles
+const ArticleList = ({articles}) => {
+    return (
+        <div className={articleStyles.grid} >
+            {articles.map(article => <h3>{article.title}</h3>)}
+        </div>
+   )
+}
+• In index.js import ArticleList and replace articles.map with
+<ArticleList articles={articles} />
+• Create component ArticleItem.js as
+import Link from 'next/link'
+import articleStyles
+const ArticleItem = ({article}) => {
+    return (
+        <Link href="/article/[id]" as={`/article/${article.id}`} >
+            <a className={articleStyles.card}>
+                  <h3>{article.title} &rarr;</h3>
+                  <p>{article.body}</p>
+            </a>
+        </Link>
+    )
+}
+• In ArticleList component import ArticleItem as
+import ArticleItem
+replace h3 with <ArticleItem article={article} />
+
+- Nested routing
+• In pages create folder article,
+in article folder create '[id]' folder.
+in [id] folder create index.js file as
+import {useRouter} from 'next/router'
+const article = () => {
+  const router = useRouter()
+  const {id} = router.query
+  return <div> This is an article {id}</div>
+}
+export default article;
+
+- getServerSideProps()
+• Fetch data at time of the request.
+• Paths are available in context variable in function.
+• In pages/article/[id]/index.js after component add
+export const getServerSideProps = async (context) => {
+    const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${context.params.id}`)
+    const articles = await res.json()
+    return {
+        props : {article}
+    }
+}
+• In component, get article as props
+import Link from 'next/link'
+const article = ({article}) => {
+   return (
+      <>
+            <h1>{article.title}</h1>
+            <p>{article.body}</p><br />
+            <Link href='/'>Go Back</Link>
+      </>
+   )
+}
+
+- getStaticPaths()
+• Combination of getStaticPaths and getStaticProps is 
+required for dynamic routes and pre-rendering.
+• It returns object having members as
+paths: [list of params object -> {params: {id: '1'}}]
+fallback: true/false/blocking
+false - returns 404 when a path combination is not pre-rendered.
+• In pages/article/[id]/index.js
+Change getServerSideProps to getStaticProps
+Getting all posts in getStaticPaths and pre-fetching data
+for all required path combination.
+Create function getStaticPaths after getStaticProps as
+export const getStaticPaths = async () => {
+  const res = await fetch('https://jsonplaceholder.typicode.com/posts`)
+  const articles = await res.json()
+  const ids = articles.map(article => article.id)
+  const paths = ids.map(id => ({params: {id: id.toString()}}))
+  return { paths, fallback: false }
+}
+
+- Export a static website
+• In package.json also export after build as
+change scripts.build from "next build" to "next build && next export"
+• It will export to 'out' folder
+• Build using : npm run build
+• Serve as : npx serve out -p 8000
+
+- API Routes
+• 
+
+
+
+
